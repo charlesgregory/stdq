@@ -7,7 +7,7 @@
 #include <unistd.h>	// STDOUT_FILENO
 #include <zmq.h>
 
-void jlog(char *format, ...);
+#include "stdsub.h"
 
 int main(int argc, char **argv)
 {
@@ -59,9 +59,12 @@ int main(int argc, char **argv)
             }
         }
 
-	write(STDOUT_FILENO, line, nbytes); 
-        
-        nlines++;
+        if (nbytes == 1 && line[0] == EOT)
+            jlog("EOT");
+        else {
+            write(STDOUT_FILENO, line, nbytes); 
+            nlines++;
+        }
     }
 
     jlog("%llu lines processed", nlines);

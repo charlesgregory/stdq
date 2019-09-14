@@ -7,7 +7,7 @@
 #include <unistd.h>	// sleep
 #include <zmq.h>
 
-void jlog(char *format, ...);
+#include "stdpub.h"
 
 int main(int argc, char **argv)
 {
@@ -31,8 +31,8 @@ int main(int argc, char **argv)
     assert(rc == 0);
     // TODO: error handling for rc < 0 http://api.zeromq.org/master:zmq-bind
 
-    jlog("Waiting 5 seconds before streaming...");
-    sleep(5);
+    jlog("Waiting 2 seconds before streaming...");
+    sleep(2);
 
     jlog("Streaming stdin to queue");
     while (1) {
@@ -43,6 +43,9 @@ int main(int argc, char **argv)
         
         zmq_send(publisher, line, linelen, 0);
     }
+    // Issue EOT marker
+    char eot[1] = {EOT};
+    zmq_send(publisher, eot, 1, 0);
 
     jlog("%llu lines processed", nlines);
 
