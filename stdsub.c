@@ -18,12 +18,25 @@ int main(int argc, char **argv)
     char *line = malloc(buflen);
     ssize_t linelen = 0;
 
+    int opt;
+    int send_eot = 0;   // option: propagate EOT marker byte (but don't close stdout)
+    while ((opt = getopt(argc, argv, "e")) != -1) {
+        switch (opt) {
+            case 'e': send_eot = 1; break;
+            default:
+                fprintf(stderr, "Usage: %s [-e] [socket]\tDefault socket: %s\n", argv[0], addr);
+                exit(EXIT_FAILURE);
+        }
+    }
+    // Now optind (declared extern int by <unistd.h>) is the index of the first non-option argument.
+    // If it is >= argc, there were no non-option arguments.
+    if (optind < argc)
+        addr = argv[optind];
+    
     int major, minor, patch;
     zmq_version(&major, &minor, &patch);
     jlog("ZMQ version: %d.%d.%d", major, minor, patch);   
     
-    char *addr = "ipc:///tmp/stdpub";
-    //char *addr = "tcp://localhost:5556";
     jlog("Establishing ZMQ SUB socket at address: %s", addr);
     void *context = zmq_ctx_new();
     void *subscriber = zmq_socket(context, ZMQ_SUB);
@@ -36,6 +49,7 @@ int main(int argc, char **argv)
     assert(rc == 0);
 
     jlog("Streaming queue to stdout");
+    if (send_eot) jlog("Option: Propagate EOT marker");
     while (1) {
         int nbytes = zmq_recv(subscriber, line, buflen, 0);
 
@@ -48,7 +62,7 @@ int main(int argc, char **argv)
                 // TODO actually drop the entire message, or rewrite line if format known
             else {
                 jlog("Logic error");
-                exit(1);
+                exit(EXIT_FAILURE);
             }
 
             buflen *= 2;
@@ -59,8 +73,10 @@ int main(int argc, char **argv)
             }
         }
 
-        if (nbytes == 1 && line[0] == EOT)
+        if (nbytes == 1 && line[0] == EOT) {
             jlog("EOT");
+            if (send_eot) write(STDOUT_FILENO, line, 1);
+        }
         else {
             write(STDOUT_FILENO, line, nbytes); 
             nlines++;
