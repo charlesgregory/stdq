@@ -24,7 +24,7 @@ int main(int argc, char **argv)
         switch (opt) {
             case 'e': send_eot = 1; break;
             default:
-                fprintf(stderr, "Usage: %s [-e] [socket]\tDefault socket: %s\n", argv[0], addr);
+                fprintf(stderr, "Usage: %s [-e] [socket addr]\tDefault socket address: %s\n", argv[0], addr);
                 exit(EXIT_FAILURE);
         }
     }
@@ -40,6 +40,8 @@ int main(int argc, char **argv)
     jlog("Establishing ZMQ SUB socket at address: %s", addr);
     void *context = zmq_ctx_new();
     void *subscriber = zmq_socket(context, ZMQ_SUB);
+    int hwm = 0;    // high water mark on recieve side. default 1000, 0:no limit
+    zmq_setsockopt(subscriber, ZMQ_RCVHWM, &hwm, sizeof(hwm) );
     int rc = zmq_connect(subscriber, addr);
     assert(rc == 0);
     // TODO: error handling for rc < 0 http://api.zeromq.org/master:zmq-bind

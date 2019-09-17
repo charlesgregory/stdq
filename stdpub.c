@@ -27,6 +27,8 @@ int main(int argc, char **argv)
     jlog("Establishing ZMQ PUB socket at address: %s", addr);
     void *context = zmq_ctx_new();
     void *publisher = zmq_socket(context, ZMQ_PUB);
+    int hwm = 0;  // high water mark on sender side default 1000, 0:no limit
+    zmq_setsockopt(publisher, ZMQ_SNDHWM, &hwm, sizeof(hwm));
     int rc = zmq_bind(publisher, addr);
     assert(rc == 0);
     // TODO: error handling for rc < 0 http://api.zeromq.org/master:zmq-bind
