@@ -9,7 +9,7 @@ stdpub/stdsub
 
 elsewhere:
 
-`./stdsub`
+`./stdsub [-e] [socket]`
 
-NOTES: EOF is not propagated over the channel; stdsub must be explicitly killed
+NOTES: EOF is propagated over the channel as 0x04; stdsub recognizes this but does not close stdout/terminate and must be explicitly killed.
 
