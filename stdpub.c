@@ -24,6 +24,9 @@ int main(int argc, char **argv)
 
     char *addr = "ipc:///tmp/stdpub";
     //char *addr = "tcp://*:5556";
+    int opt;
+    if (optind < argc)
+        addr = argv[optind];
     jlog("Establishing ZMQ PUB socket at address: %s", addr);
     void *context = zmq_ctx_new();
     void *publisher = zmq_socket(context, ZMQ_PUB);
