@@ -78,9 +78,11 @@ int main(int argc, char **argv)
         if (nbytes == 1 && line[0] == EOT) {
             jlog("EOT");
             if (send_eot) {
-                line[1] = '\n'; // consumer likely to be line-oriented
-                write(STDOUT_FILENO, line, 2);
+                //line[1] = '\n'; // consumer likely to be line-oriented
+                //write(STDOUT_FILENO, line, 2);
                 fflush(stdout);
+                fclose(stdout);
+                break;
             }
         }
         else {
